@@ -8,14 +8,47 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <canvas  width="10" height="10" id="screen"></canvas>
+    <canvas width="10" height="10" id="screen"></canvas>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="renderUsers.js"></script>
-    <script
+    <script type="module">
+      import createKeyboardListener from "./keyboardListener.js";
+      import createGame from "./createGame.js";
+      import renderScreen from "./renderScreen.js";
+      const screen = document.getElementById("screen");
+
+      const game = createGame();
+      const keyboardListener = createKeyboardListener(document);
+      keyboardListener.subscribe(game.movePlayer);
+
+      renderScreen(screen, game, requestAnimationFrame);
+
+      const socket = io();
+
+      socket.on("connect", () => {
+        const playerID = socket.id;
+        console.log(playerID);
+      });
+
+      socket.on("setup", (state) => {
+        console.log('--> receiving "setup" event  from server');
+
+        game.setState(state);
+      });
+      socket.on("add-player", (command) => {
+        console.log(`receiving ${command.type} --> ${command.playerId}`);
+        game.addPlayer(command);
+      });
+
+      socket.on("remove-player", (command) => {
+        console.log(`receiving ${command.type} --> ${command.playerId}`);
+        game.removePlayer(command);
+      });
+    </script>
+    <!-- <script
       src="https://cdn.socket.io/4.7.5/socket.io.min.js"
       integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
       crossorigin="anonymous"
-    ></script>
+    ></script> -->
   </body>
 </html>
